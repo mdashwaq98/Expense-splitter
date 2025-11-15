@@ -1,0 +1,59 @@
+========================================
+   YOUR SPENDING TRACKER LOGIN INFO
+========================================
+
+IMPORTANT: Save this file securely!
+
+Default Account (Created Automatically):
+----------------------------------------
+Username: admin
+Password: admin123
+
+SECURITY RECOMMENDATIONS:
+----------------------------------------
+1. Change the default password after first login
+   OR
+2. Create a new account with Register button
+   Then delete the admin account
+
+HOW TO ACCESS:
+----------------------------------------
+On This Computer:
+→ http://localhost:5000
+
+From Phone/Tablet (Same WiFi):
+→ http://192.168.2.99:5000
+
+TO START THE APP:
+----------------------------------------
+1. Open Command Prompt or PowerShell
+2. Navigate to: C:\Users\mdash\Downloads\spendings
+3. Run: python app.py
+4. Go to: http://localhost:5000
+5. Login with credentials above
+
+TO CHANGE PASSWORD:
+----------------------------------------
+Option 1: Create New Account
+- Click "Register here" on login page
+- Create account with your desired password
+- Login with new account
+
+Option 2: Modify Code (Advanced)
+- Edit app.py
+- Find the default user creation section
+- Change 'admin123' to your new password
+- Delete database: instance\spendings.db
+- Restart app
+
+CLOUD DEPLOYMENT (Optional):
+----------------------------------------
+To access from anywhere without keeping laptop on:
+- See CLOUD_DEPLOYMENT.md
+- Recommended: Render.com (free, 10 minutes)
+- Your data stays private with login protection
+
+========================================
+        KEEP THIS FILE SECURE!
+========================================
+

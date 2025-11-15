@@ -1,201 +1,233 @@
-# Expense Splitter
+# Spending Tracker - Financial Management App
 
-A beautiful and intuitive mobile app for tracking and splitting expenses with friends and groups.
+A comprehensive web-based financial management application to track income, expenses, debt, and savings goals.
 
 ## Features
 
-### ✅ Authentication
-- **User Registration**: Create a new account with name, email, and password
-- **Login System**: Secure login with email and password
-- **Profile Management**: Edit your profile information
-- **Persistent Sessions**: Stay logged in across app restarts
+### 📊 Dashboard
+- Real-time financial overview
+- Summary cards for income, expenses, debt, and savings
+- Interactive charts and visualizations
+- Recent transaction history
 
-### 💰 Expense Tracking
-- **Add Expenses**: Track expenses with description, amount, and optional group assignment
-- **View All Expenses**: See a complete list of all your expenses
-- **Total Tracking**: Automatically calculated total expenses
-- **Delete Expenses**: Long-press to remove expenses
+### 💰 Income Management
+- Track main income and side income
+- Multiple income sources
+- Date-based tracking
+- Notes and categorization
 
-### 👥 Group Management
-- **Create Groups**: Organize expenses by creating groups (e.g., "Roommates", "Vacation Trip")
-- **Group Overview**: View all your groups with member counts
-- **Group Balances**: See how much you owe or are owed in each group
-- **Delete Groups**: Long-press to remove groups
+### 💳 Expense Tracking
+- Category-based expense tracking
+- Visual expense breakdown
+- Detailed transaction history
+- Custom notes per expense
 
-### 📊 Profile & Statistics
-- **Personal Dashboard**: View your expense statistics
-- **Balance Overview**: See your overall balance across all groups
-- **Account Management**: Edit profile, access settings
-- **Activity Summary**: Track total expenses and group memberships
+### 🏦 Debt Management
+- Track multiple debts
+- Interest rate tracking
+- Payment history
+- Progress visualization
+- Debt payoff calculator
 
-### 💎 User Experience
-- **Beautiful UI**: Modern, clean design with intuitive navigation
-- **Bottom Tab Navigation**: Easy access to Expenses, Groups, and Profile
-- **Color-Coded Sections**: Different colors for each main section
-- **Responsive Design**: Works on all screen sizes
-- **Data Persistence**: All data stored locally using AsyncStorage
+### 🎯 Savings Goals
+- Create multiple savings goals
+- Track progress with visual indicators
+- Deadline management
+- Goal completion tracking
 
-## Tech Stack
+### 🔄 Recurring Expenses
+- Manage recurring bills
+- Frequency tracking (weekly, bi-weekly, monthly)
+- Category organization
+- Automatic reminders
 
-- **React Native** with Expo
-- **React Navigation** for navigation (Stack & Bottom Tabs)
-- **AsyncStorage** for local data persistence
-- **Context API** for state management
+### 📈 Analytics
+- Monthly income vs expenses comparison
+- Expense breakdown by category
+- Income source analysis
+- Debt overview and progress
+
+### 📥 Data Import
+- Import existing data from Excel
+- Seamless integration with Master Sheet.xlsx
 
 ## Installation
 
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+1. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-2. **Start the Development Server**
-   ```bash
-   npm start
-   ```
+2. Run the application:
+```bash
+python app.py
+```
 
-3. **Run on Device/Emulator**
-   - Press `a` for Android
-   - Press `i` for iOS
-   - Scan QR code with Expo Go app
+3. Open your browser and navigate to:
+```
+http://localhost:5000
+```
 
 ## Usage
 
 ### First Time Setup
-1. Launch the app
-2. Tap "Sign up" to create a new account
-3. Fill in your name, email, and password
-4. You'll be automatically logged in
+1. Start the application
+2. The database will be created automatically
+3. Click "Import from Excel" to load existing data (if you have Master Sheet.xlsx)
+4. Start adding your financial transactions
 
-### Adding Expenses
+### Adding Income
+1. Navigate to the "Income" tab
+2. Click "+ Add Income"
+3. Fill in the details (date, source, type, amount)
+4. Submit to save
+
+### Recording Expenses
 1. Go to the "Expenses" tab
-2. Tap the "+" button
-3. Enter expense description and amount
-4. Optionally assign to a group
-5. Tap "Add"
+2. Click "+ Add Expense"
+3. Select category and enter amount
+4. Add optional description and notes
 
-### Creating Groups
-1. Go to the "Groups" tab
-2. Tap the "+" button
-3. Enter a group name
-4. Tap "Create"
+### Managing Debt
+1. Open the "Debt" tab
+2. Click "+ Add Debt" to register a debt
+3. Record payments as you make them
+4. Track your progress with visual indicators
 
-### Managing Profile
-1. Go to the "Profile" tab
-2. View your statistics and balance
-3. Tap "Edit Profile" to update your information
-4. Tap "Logout" when you're done
+### Setting Savings Goals
+1. Visit the "Savings" tab
+2. Click "+ Add Goal" to create a new goal
+3. Set target amount and deadline
+4. Add savings contributions regularly
 
-## Project Structure
+### Recurring Expenses
+1. Go to "Recurring" tab
+2. Add bills that repeat (car loan, insurance, etc.)
+3. Set frequency and amount
+4. Track all recurring expenses in one place
 
+## Data Structure
+
+### Database Tables
+- **Income**: Tracks all income sources
+- **Expense**: Records all expenses
+- **Debt**: Manages debt accounts
+- **DebtPayment**: Tracks debt payments
+- **Savings**: Records savings contributions
+- **SavingsGoal**: Manages savings goals
+- **RecurringExpense**: Tracks recurring bills
+
+### Excel Import
+The app can import data from your existing Excel file with sheets:
+- Main: Primary financial data
+- Side Income: Additional income sources
+- ManualExpenses: Expense entries
+- And more...
+
+## API Endpoints
+
+### Dashboard
+- `GET /api/dashboard` - Get dashboard summary
+
+### Income
+- `GET /api/income` - List all income
+- `POST /api/income` - Add new income
+- `PUT /api/income/<id>` - Update income
+- `DELETE /api/income/<id>` - Delete income
+
+### Expenses
+- `GET /api/expenses` - List all expenses
+- `POST /api/expenses` - Add new expense
+- `PUT /api/expenses/<id>` - Update expense
+- `DELETE /api/expenses/<id>` - Delete expense
+
+### Debts
+- `GET /api/debts` - List all debts
+- `POST /api/debts` - Add new debt
+- `PUT /api/debts/<id>` - Update debt
+- `DELETE /api/debts/<id>` - Delete debt
+
+### Debt Payments
+- `GET /api/debt-payments` - List all payments
+- `POST /api/debt-payments` - Record payment
+
+### Savings
+- `GET /api/savings` - List all savings
+- `POST /api/savings` - Add savings
+- `GET /api/savings-goals` - List savings goals
+- `POST /api/savings-goals` - Create goal
+
+### Recurring Expenses
+- `GET /api/recurring-expenses` - List recurring expenses
+- `POST /api/recurring-expenses` - Add recurring expense
+
+### Analytics
+- `GET /api/analytics/expenses-by-category` - Expense breakdown
+- `GET /api/analytics/income-by-type` - Income analysis
+- `GET /api/analytics/monthly-summary` - Monthly trends
+
+## Technologies Used
+
+### Backend
+- **Flask** - Web framework
+- **SQLAlchemy** - Database ORM
+- **SQLite** - Database
+- **Pandas** - Data processing
+
+### Frontend
+- **HTML5** - Structure
+- **CSS3** - Styling with modern design
+- **JavaScript** - Interactivity
+- **Chart.js** - Data visualization
+
+## Features Highlights
+
+✅ Beautiful, modern UI with responsive design
+✅ Real-time data updates
+✅ Interactive charts and graphs
+✅ Easy-to-use interface
+✅ Comprehensive financial tracking
+✅ Data import from Excel
+✅ Mobile-friendly responsive design
+✅ No authentication required (local use)
+
+## Development
+
+### Project Structure
 ```
-expense-splitter/
-├── App.js                          # Main app entry point with navigation
-├── src/
-│   ├── context/
-│   │   ├── AuthContext.js          # Authentication state management
-│   │   └── ExpenseContext.js       # Expense & group state management
-│   └── screens/
-│       ├── LoginScreen.js          # Login screen
-│       ├── SignupScreen.js         # Registration screen
-│       ├── HomeScreen.js           # Expenses tab (main screen)
-│       ├── GroupsScreen.js         # Groups tab
-│       └── ProfileScreen.js        # Profile tab
-├── assets/                         # App icons and images
-├── package.json
-├── app.json                        # Expo configuration
-└── babel.config.js
-
+spendings/
+├── app.py                  # Flask application
+├── requirements.txt        # Python dependencies
+├── spendings.db           # SQLite database (auto-created)
+├── Master Sheet.xlsx      # Excel data source
+├── templates/
+│   └── index.html         # Main HTML template
+└── static/
+    ├── style.css          # Styles
+    └── app.js             # Frontend JavaScript
 ```
-
-## Features Breakdown
-
-### Authentication System
-- Secure user registration and login
-- Password validation (minimum 6 characters)
-- Email validation and duplicate checking
-- Automatic session management
-- Local storage of user credentials
-
-### Expense Management
-- Create, view, and delete expenses
-- Link expenses to groups
-- Track who paid for each expense
-- Automatic date tracking
-- Currency formatting
-
-### Group Features
-- Create unlimited groups
-- View group members
-- Calculate balances per group
-- Track overall balance across all groups
-- Visual balance indicators (green for owed, red for owing)
-
-### Profile Features
-- Editable user information
-- Statistics dashboard
-- Overall balance calculation
-- Settings and support options
-- Logout functionality
-
-## Data Storage
-
-All data is stored locally on the device using AsyncStorage:
-- User credentials and session
-- Personal expenses
-- Group information
-- Profile data
-
-**Note**: In a production app, you would want to:
-- Use a backend API for data synchronization
-- Implement proper password hashing
-- Add user authentication tokens
-- Enable cloud backup
 
 ## Future Enhancements
 
-- [ ] Add members to groups by email
-- [ ] Split expenses between multiple people
-- [ ] Calculate who owes whom
-- [ ] Payment settlements
-- [ ] Expense categories and filtering
-- [ ] Search functionality
-- [ ] Export expenses to CSV
-- [ ] Push notifications
-- [ ] Dark mode
-- [ ] Multiple currencies
-
-## Known Limitations
-
-- Data is stored locally only (no cloud sync)
-- Limited to single-device usage
-- No real-time collaboration
-- Basic expense splitting (equal splits only)
-
-## Troubleshooting
-
-### App won't start
-- Make sure you've run `npm install`
-- Check that you have Expo CLI installed: `npm install -g expo-cli`
-- Clear cache: `expo start -c`
-
-### Login/Signup issues
-- Check that all fields are filled in
-- Password must be at least 6 characters
-- Email must be unique for signup
-
-### Data not persisting
-- Check that AsyncStorage has proper permissions
-- Try clearing app data and re-logging in
+- [ ] Export data to Excel/CSV
+- [ ] Email reminders for bills
+- [ ] Budget planning tools
+- [ ] Expense forecasting
+- [ ] Multi-user support
+- [ ] Cloud backup
+- [ ] Mobile app version
+- [ ] Receipt scanning
+- [ ] Category customization
 
 ## License
 
-MIT License - feel free to use this app for personal or commercial projects.
+This project is for personal use.
 
-## Contributing
+## Support
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+For issues or questions, please refer to the code comments or modify as needed for your use case.
 
 ---
 
-**Built with ❤️ using React Native and Expo**
+Built with ❤️ for better financial management
+
