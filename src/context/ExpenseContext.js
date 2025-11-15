@@ -99,7 +99,17 @@ export const ExpenseProvider = ({ children }) => {
       currency: group.currency || 'USD',
       createdBy: user.id,
       createdAt: new Date().toISOString(),
-      members: [user.id, ...(group.members || [])],
+      description: group.description || '',
+      category: group.category || 'General',
+      members: [
+        {
+          userId: user.id,
+          name: user.name,
+          role: 'admin',
+          joinedAt: new Date().toISOString(),
+        },
+        ...(group.members || [])
+      ],
     };
     const updatedGroups = [...groups, newGroup];
     await saveGroups(updatedGroups);
@@ -134,6 +144,49 @@ export const ExpenseProvider = ({ children }) => {
   const deleteSettlement = async (settlementId) => {
     const updatedSettlements = settlements.filter(s => s.id !== settlementId);
     await saveSettlements(updatedSettlements);
+  };
+
+  // Member management functions
+  const addMemberToGroup = async (groupId, memberName) => {
+    const group = groups.find(g => g.id === groupId);
+    if (!group) return;
+
+    const newMember = {
+      userId: `member_${Date.now()}`, // In real app, would be actual user ID
+      name: memberName,
+      role: 'member',
+      joinedAt: new Date().toISOString(),
+    };
+
+    const updatedGroups = groups.map(g => 
+      g.id === groupId 
+        ? { ...g, members: [...(g.members || []), newMember] }
+        : g
+    );
+    await saveGroups(updatedGroups);
+  };
+
+  const removeMemberFromGroup = async (groupId, userId) => {
+    const updatedGroups = groups.map(g => 
+      g.id === groupId 
+        ? { ...g, members: (g.members || []).filter(m => m.userId !== userId) }
+        : g
+    );
+    await saveGroups(updatedGroups);
+  };
+
+  const updateMemberRole = async (groupId, userId, newRole) => {
+    const updatedGroups = groups.map(g => 
+      g.id === groupId 
+        ? {
+            ...g,
+            members: (g.members || []).map(m => 
+              m.userId === userId ? { ...m, role: newRole } : m
+            )
+          }
+        : g
+    );
+    await saveGroups(updatedGroups);
   };
 
   const calculateBalances = (groupId = null) => {
@@ -257,6 +310,9 @@ export const ExpenseProvider = ({ children }) => {
         deleteGroup,
         addSettlement,
         deleteSettlement,
+        addMemberToGroup,
+        removeMemberFromGroup,
+        updateMemberRole,
         calculateBalances,
         simplifyDebts,
         getCurrencySymbol,

@@ -23,7 +23,7 @@ const CURRENCIES = [
 ];
 
 export default function GroupsScreen() {
-  const { groups, addGroup, deleteGroup, calculateBalances, simplifyDebts, getCurrencySymbol, settlements, addSettlement } = useContext(ExpenseContext);
+  const { groups, addGroup, deleteGroup, calculateBalances, simplifyDebts, getCurrencySymbol, settlements, addSettlement, addMemberToGroup, removeMemberFromGroup } = useContext(ExpenseContext);
   const { user } = useContext(AuthContext);
   const [modalVisible, setModalVisible] = useState(false);
   const [groupName, setGroupName] = useState('');
@@ -33,6 +33,8 @@ export default function GroupsScreen() {
   const [settlementModalVisible, setSettlementModalVisible] = useState(false);
   const [settlementAmount, setSettlementAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash');
+  const [addMemberModalVisible, setAddMemberModalVisible] = useState(false);
+  const [newMemberName, setNewMemberName] = useState('');
 
   const handleAddGroup = async () => {
     if (!groupName) {
@@ -93,6 +95,41 @@ export default function GroupsScreen() {
     setPaymentMethod('Cash');
     setSettlementModalVisible(false);
     Alert.alert('Success', 'Payment recorded successfully');
+  };
+
+  const handleAddMember = async () => {
+    if (!newMemberName.trim()) {
+      Alert.alert('Error', 'Please enter a member name');
+      return;
+    }
+
+    await addMemberToGroup(selectedGroup.id, newMemberName.trim());
+    setNewMemberName('');
+    setAddMemberModalVisible(false);
+    Alert.alert('Success', `${newMemberName} added to group`);
+  };
+
+  const handleRemoveMember = (memberId, memberName) => {
+    if (memberId === user.id) {
+      Alert.alert('Error', 'You cannot remove yourself. Use "Leave Group" instead.');
+      return;
+    }
+
+    Alert.alert(
+      'Remove Member',
+      `Remove ${memberName} from group?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            await removeMemberFromGroup(selectedGroup.id, memberId);
+            Alert.alert('Success', `${memberName} removed from group`);
+          },
+        },
+      ]
+    );
   };
 
   const renderGroup = ({ item }) => {
@@ -205,15 +242,50 @@ export default function GroupsScreen() {
           </View>
         )}
 
-        <Text style={styles.sectionTitle}>Group Members</Text>
-        <View style={styles.membersList}>
-          {selectedGroup.members?.map((memberId, index) => (
-            <View key={index} style={styles.memberChip}>
-              <Text style={styles.memberText}>
-                {memberId === user.id ? 'You' : `Member ${index + 1}`}
-              </Text>
-            </View>
-          ))}
+        <View style={styles.membersSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Group Members ({selectedGroup.members?.length || 0})</Text>
+            <TouchableOpacity
+              style={styles.addMemberButton}
+              onPress={() => setAddMemberModalVisible(true)}
+            >
+              <Text style={styles.addMemberButtonText}>+ Add</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.membersList}>
+            {selectedGroup.members?.map((member, index) => {
+              const isObject = typeof member === 'object';
+              const memberName = isObject ? member.name : (member === user.id ? 'You' : `Member ${index + 1}`);
+              const memberId = isObject ? member.userId : member;
+              const memberRole = isObject ? member.role : (member === user.id ? 'admin' : 'member');
+              
+              return (
+                <View key={index} style={styles.memberCard}>
+                  <View style={styles.memberInfo}>
+                    <View style={styles.memberAvatar}>
+                      <Text style={styles.memberAvatarText}>
+                        {memberName.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text style={styles.memberName}>{memberName}</Text>
+                      <Text style={styles.memberRole}>
+                        {memberRole === 'admin' ? '👑 Admin' : 'Member'}
+                      </Text>
+                    </View>
+                  </View>
+                  {memberId !== user.id && memberRole !== 'admin' && (
+                    <TouchableOpacity
+                      style={styles.removeMemberButton}
+                      onPress={() => handleRemoveMember(memberId, memberName)}
+                    >
+                      <Text style={styles.removeMemberText}>Remove</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
+            })}
+          </View>
         </View>
 
         <TouchableOpacity
@@ -383,6 +455,45 @@ export default function GroupsScreen() {
                 onPress={handleRecordSettlement}
               >
                 <Text style={styles.addButtonText}>Record</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={addMemberModalVisible}
+        onRequestClose={() => setAddMemberModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add Member</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Member Name"
+              value={newMemberName}
+              onChangeText={setNewMemberName}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setNewMemberName('');
+                  setAddMemberModalVisible(false);
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.addButton]}
+                onPress={handleAddMember}
+              >
+                <Text style={styles.addButtonText}>Add</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -603,16 +714,76 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginBottom: 20,
   },
-  memberChip: {
-    backgroundColor: '#e3f2fd',
+  membersSection: {
+    marginTop: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  addMemberButton: {
+    backgroundColor: '#4CAF50',
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
-    marginRight: 10,
-    marginBottom: 10,
   },
-  memberText: {
-    color: '#2196F3',
+  addMemberButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  memberCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  memberInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  memberAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#2196F3',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  memberAvatarText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  memberName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  memberRole: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+  removeMemberButton: {
+    backgroundColor: '#ffebee',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+  removeMemberText: {
+    color: '#f44336',
+    fontSize: 12,
+    fontWeight: '600',
   },
   closeButton: {
     backgroundColor: '#2196F3',
