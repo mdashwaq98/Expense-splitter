@@ -8,17 +8,32 @@ import {
   Alert,
   Modal,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import { ExpenseContext } from '../context/ExpenseContext';
 import { AuthContext } from '../context/AuthContext';
 
+// Expense categories with icons
+const EXPENSE_CATEGORIES = [
+  { value: 'Food', label: 'Food', icon: '🍔', color: '#FF6B6B' },
+  { value: 'Transport', label: 'Transport', icon: '🚗', color: '#4ECDC4' },
+  { value: 'Entertainment', label: 'Entertainment', icon: '🎬', color: '#95E1D3' },
+  { value: 'Utilities', label: 'Utilities', icon: '💡', color: '#F38181' },
+  { value: 'Shopping', label: 'Shopping', icon: '🛍️', color: '#AA96DA' },
+  { value: 'Travel', label: 'Travel', icon: '✈️', color: '#FCBAD3' },
+  { value: 'Health', label: 'Health', icon: '💊', color: '#A8E6CF' },
+  { value: 'Other', label: 'Other', icon: '📝', color: '#FFD3B6' },
+];
+
 export default function HomeScreen() {
-  const { expenses, addExpense, deleteExpense, groups } = useContext(ExpenseContext);
+  const { expenses, addExpense, deleteExpense, groups, getCurrencySymbol } = useContext(ExpenseContext);
   const { user } = useContext(AuthContext);
   const [modalVisible, setModalVisible] = useState(false);
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('Other');
+  const [splitType, setSplitType] = useState('equal');
 
   const handleAddExpense = async () => {
     if (!description || !amount) {
@@ -29,6 +44,8 @@ export default function HomeScreen() {
     const expense = {
       description: description.trim(),
       amount: parseFloat(amount),
+      category: selectedCategory,
+      splitType: splitType,
       paidBy: user.id,
       paidByName: user.name,
       groupId: selectedGroup,
@@ -39,6 +56,8 @@ export default function HomeScreen() {
     setDescription('');
     setAmount('');
     setSelectedGroup(null);
+    setSelectedCategory('Other');
+    setSplitType('equal');
     setModalVisible(false);
     Alert.alert('Success', 'Expense added successfully');
   };
@@ -58,14 +77,35 @@ export default function HomeScreen() {
     );
   };
 
-  const renderExpense = ({ item }) => (
+  const getCategoryInfo = (categoryValue) => {
+    return EXPENSE_CATEGORIES.find(cat => cat.value === categoryValue) || EXPENSE_CATEGORIES[7];
+  };
+
+  const renderExpense = ({ item }) => {
+    const categoryInfo = getCategoryInfo(item.category);
+    return (
     <TouchableOpacity
       style={styles.expenseCard}
       onLongPress={() => handleDeleteExpense(item.id)}
     >
       <View style={styles.expenseHeader}>
-        <Text style={styles.expenseDescription}>{item.description}</Text>
-        <Text style={styles.expenseAmount}>${item.amount.toFixed(2)}</Text>
+        <View style={styles.expenseHeaderLeft}>
+          <View style={[styles.categoryBadge, { backgroundColor: categoryInfo.color }]}>
+            <Text style={styles.categoryIcon}>{categoryInfo.icon}</Text>
+          </View>
+          <View style={styles.expenseInfo}>
+            <Text style={styles.expenseDescription}>{item.description}</Text>
+            <View style={styles.expenseMetadata}>
+              <Text style={styles.categoryLabel}>{categoryInfo.label}</Text>
+              {item.splitType && item.splitType !== 'equal' && (
+                <Text style={styles.splitBadge}>• {item.splitType}</Text>
+              )}
+            </View>
+          </View>
+        </View>
+        <Text style={styles.expenseAmount}>
+          {getCurrencySymbol(item.currency)}{item.amount.toFixed(2)}
+        </Text>
       </View>
       <View style={styles.expenseFooter}>
         <Text style={styles.expenseDetail}>Paid by: {item.paidByName}</Text>
@@ -79,7 +119,8 @@ export default function HomeScreen() {
         </Text>
       )}
     </TouchableOpacity>
-  );
+    );
+  };
 
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
@@ -89,7 +130,9 @@ export default function HomeScreen() {
         <Text style={styles.headerTitle}>My Expenses</Text>
         <View style={styles.totalCard}>
           <Text style={styles.totalLabel}>Total Expenses</Text>
-          <Text style={styles.totalAmount}>${totalExpenses.toFixed(2)}</Text>
+          <Text style={styles.totalAmount}>
+            {getCurrencySymbol('USD')}{totalExpenses.toFixed(2)}
+          </Text>
         </View>
       </View>
 
@@ -139,6 +182,75 @@ export default function HomeScreen() {
               onChangeText={setAmount}
               keyboardType="decimal-pad"
             />
+
+            <Text style={styles.label}>Category</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+              <View style={styles.categorySelector}>
+                {EXPENSE_CATEGORIES.map((category) => (
+                  <TouchableOpacity
+                    key={category.value}
+                    style={[
+                      styles.categoryChip,
+                      { borderColor: category.color },
+                      selectedCategory === category.value && {
+                        backgroundColor: category.color,
+                      },
+                    ]}
+                    onPress={() => setSelectedCategory(category.value)}
+                  >
+                    <Text style={styles.categoryChipIcon}>{category.icon}</Text>
+                    <Text
+                      style={[
+                        styles.categoryChipText,
+                        selectedCategory === category.value && styles.categoryChipTextSelected,
+                      ]}
+                    >
+                      {category.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+
+            <Text style={styles.label}>Split Type</Text>
+            <View style={styles.splitTypeSelector}>
+              <TouchableOpacity
+                style={[
+                  styles.splitTypeButton,
+                  splitType === 'equal' && styles.splitTypeButtonSelected,
+                ]}
+                onPress={() => setSplitType('equal')}
+              >
+                <Text style={[
+                  styles.splitTypeText,
+                  splitType === 'equal' && styles.splitTypeTextSelected,
+                ]}>Equal Split</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.splitTypeButton,
+                  splitType === 'custom' && styles.splitTypeButtonSelected,
+                ]}
+                onPress={() => setSplitType('custom')}
+              >
+                <Text style={[
+                  styles.splitTypeText,
+                  splitType === 'custom' && styles.splitTypeTextSelected,
+                ]}>Custom</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.splitTypeButton,
+                  splitType === 'percentage' && styles.splitTypeButtonSelected,
+                ]}
+                onPress={() => setSplitType('percentage')}
+              >
+                <Text style={[
+                  styles.splitTypeText,
+                  splitType === 'percentage' && styles.splitTypeTextSelected,
+                ]}>Percentage</Text>
+              </TouchableOpacity>
+            </View>
 
             <Text style={styles.label}>Select Group (Optional)</Text>
             <View style={styles.groupSelector}>
@@ -236,10 +348,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
+  expenseHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  categoryBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  categoryIcon: {
+    fontSize: 20,
+  },
+  expenseInfo: {
+    flex: 1,
+  },
   expenseDescription: {
     fontSize: 16,
     fontWeight: '600',
-    flex: 1,
+  },
+  expenseMetadata: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  categoryLabel: {
+    fontSize: 12,
+    color: '#666',
+  },
+  splitBadge: {
+    fontSize: 11,
+    color: '#2196F3',
+    marginLeft: 5,
+    fontWeight: '500',
   },
   expenseAmount: {
     fontSize: 18,
@@ -351,6 +496,36 @@ const styles = StyleSheet.create({
   groupChipTextSelected: {
     color: '#fff',
   },
+  categoryScroll: {
+    marginBottom: 15,
+  },
+  categorySelector: {
+    flexDirection: 'row',
+    paddingVertical: 5,
+  },
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 10,
+    borderWidth: 2,
+  },
+  categoryChipIcon: {
+    fontSize: 16,
+    marginRight: 5,
+  },
+  categoryChipText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  categoryChipTextSelected: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -377,6 +552,34 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  splitTypeSelector: {
+    flexDirection: 'row',
+    marginBottom: 15,
+    gap: 10,
+  },
+  splitTypeButton: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#f0f0f0',
+  },
+  splitTypeButtonSelected: {
+    backgroundColor: '#E3F2FD',
+    borderColor: '#2196F3',
+  },
+  splitTypeText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  splitTypeTextSelected: {
+    color: '#2196F3',
     fontWeight: '600',
   },
 });
